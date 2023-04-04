@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { UpdateExpenseDTO } from './dto/expense-update.dto';
 import { CreateExpenseDTO } from './dto/expense.dto';
 import { ExpensesService } from './expenses.service';
@@ -12,8 +20,12 @@ export class ExpensesController {
   }
 
   @Get('/:id')
-  findById(@Param('id') id: number) {
-    return this.expensesService.findOne(id);
+  async findById(@Param('id') id: number) {
+    try {
+      return await this.expensesService.findOne(id);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 
   @Post('/')
@@ -22,7 +34,14 @@ export class ExpensesController {
   }
 
   @Patch('/:id')
-  update(@Param('id') id: number, @Body() updateExpenseDTO: UpdateExpenseDTO) {
-    return this.expensesService.update(id, updateExpenseDTO);
+  async update(
+    @Param('id') id: number,
+    @Body() updateExpenseDTO: UpdateExpenseDTO,
+  ) {
+    try {
+      return await this.expensesService.update(id, updateExpenseDTO);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 }

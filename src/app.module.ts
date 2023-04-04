@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ExpenseType } from './database/entities/expense-type.entity';
-import { Expense } from './database/entities/expense.entity';
+import { join } from 'path';
 import { ExpensesModule } from './expenses/expenses.module';
-
+import { IncomesModule } from './incomes/incomes.module';
+console.log(join(__dirname, 'database', 'entities', '*.entity.ts'));
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -13,11 +13,12 @@ import { ExpensesModule } from './expenses/expenses.module';
       username: 'root',
       password: 'password',
       database: 'cuentas_claras',
-      entities: [ExpenseType, Expense],
+      entities: [join(__dirname, 'database', 'entities', '*.entity.{js,ts}')],
       autoLoadEntities: true,
       synchronize: false,
     }),
     ExpensesModule,
+    IncomesModule,
   ],
 })
 export class AppModule {}
