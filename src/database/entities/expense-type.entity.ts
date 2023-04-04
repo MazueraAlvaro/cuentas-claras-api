@@ -10,7 +10,7 @@ export class ExpenseType {
   name: string;
 
   @Column()
-  descrition: string;
+  description: string;
 
   @OneToMany(() => Expense, (expense) => expense.expenseType)
   expenses: Expense[];

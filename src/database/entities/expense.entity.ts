@@ -21,10 +21,10 @@ export class Expense {
   @Column()
   dueDay: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   startAt: Date;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   endAt: Date;
 
   @ManyToOne(() => ExpenseType, (expenseType) => expenseType.expenses)
