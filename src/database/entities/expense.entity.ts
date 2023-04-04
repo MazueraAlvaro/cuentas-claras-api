@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinTable,
+} from 'typeorm';
 import { ExpenseType } from './expense-type.entity';
 
 @Entity()
@@ -27,6 +33,9 @@ export class Expense {
   @Column({ type: 'date', nullable: true })
   endAt: Date;
 
-  @ManyToOne(() => ExpenseType, (expenseType) => expenseType.expenses)
+  @ManyToOne(() => ExpenseType, (expenseType) => expenseType.expenses, {
+    eager: true,
+  })
+  @JoinTable()
   expenseType: ExpenseType;
 }

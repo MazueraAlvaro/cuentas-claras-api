@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { UpdateExpenseDTO } from './dto/expense-update.dto';
 import { CreateExpenseDTO } from './dto/expense.dto';
 import { ExpensesService } from './expenses.service';
 
@@ -18,5 +19,10 @@ export class ExpensesController {
   @Post('/')
   create(@Body() createExpenseDTO: CreateExpenseDTO) {
     return this.expensesService.create(createExpenseDTO);
+  }
+
+  @Patch('/:id')
+  update(@Param('id') id: number, @Body() updateExpenseDTO: UpdateExpenseDTO) {
+    return this.expensesService.update(id, updateExpenseDTO);
   }
 }
