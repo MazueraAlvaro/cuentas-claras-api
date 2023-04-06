@@ -38,49 +38,39 @@ export class MonthsService {
         message: 'Month already exists',
       });
     }
-    const { monthIncomes, totalIncomes } = await this.getMonthRecurringIncomes(
-      month,
-    );
-    const { monthExpenses, totalExpenses } =
-      await this.getMonthRecurringExpenses(month);
+    const monthIncomes = await this.getMonthRecurringIncomes(month);
+    const monthExpenses = await this.getMonthRecurringExpenses(month);
     const monthEntity = new Month();
     monthEntity.month = month;
     monthEntity.status = MonthStatus.OPEN;
     monthEntity.monthIncomes = monthIncomes;
     monthEntity.monthExpenses = monthExpenses;
-    monthEntity.totalExpenses = totalExpenses;
-    monthEntity.totalIncomes = totalIncomes;
-    monthEntity.difference = totalIncomes - totalExpenses;
-    monthEntity.currentBalance = totalIncomes;
-    monthEntity.totalUnpaid = totalExpenses;
+    this.calculateAndUpdateTotals(monthEntity);
     return this.monthRepository.save(monthEntity);
   }
 
   private async getMonthRecurringIncomes(month: Date) {
     const incomes = await this.incomesService.getIncomesByMonth(month);
-    let totalIncomes = 0;
     const monthIncomes = incomes.map((income) => {
-      totalIncomes += income.amount;
       const monthIncome = new MonthIncome();
       monthIncome.income = income;
       monthIncome.amount = income.amount;
       monthIncome.received = false;
       return monthIncome;
     });
-    return { monthIncomes, totalIncomes };
+    return monthIncomes;
   }
+
   private async getMonthRecurringExpenses(month: Date) {
     const expenses = await this.expensesService.getExpensesByMonth(month);
-    let totalExpenses = 0;
     const monthExpenses = expenses.map((expense) => {
-      totalExpenses += expense.amount;
       const monthExpense = new MonthExpense();
       monthExpense.expense = expense;
       monthExpense.amount = expense.amount;
       monthExpense.paid = false;
       return monthExpense;
     });
-    return { monthExpenses, totalExpenses };
+    return monthExpenses;
   }
 
   async addExpenseById(monthId: number, expenseId: number) {
@@ -157,7 +147,7 @@ export class MonthsService {
     updateMonthExpenseDTO: UpdateMonthExpenseDTO,
   ) {
     const exists = await this.monthRepository.count({
-      where: { monthExpenses: { id: monthExpenseId } },
+      where: { monthExpenses: { id: monthExpenseId }, id: monthId },
     });
     if (exists == 0) {
       throw new NotFoundException({
@@ -170,6 +160,7 @@ export class MonthsService {
       (monthExpense) => monthExpense.id === monthExpenseId,
     );
     Object.assign(monthExpense, updateMonthExpenseDTO);
+    this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
   }
 
@@ -192,6 +183,32 @@ export class MonthsService {
       (monthIncome) => monthIncome.id === monthIncomeId,
     );
     Object.assign(monthIncome, updateMonthIncomeDTO);
+    this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
+  }
+
+  private calculateAndUpdateTotals(month: Month) {
+    const totals = {
+      totalExpenses: 0,
+      totalIncomes: 0,
+      totalUnpaid: 0,
+    };
+    month.monthExpenses.reduce((totals, monthExpense) => {
+      totals.totalExpenses += monthExpense.amount;
+      totals.totalUnpaid += monthExpense.paid ? 0 : monthExpense.amount;
+      return totals;
+    }, totals);
+    month.monthIncomes.reduce((totals, monthIncome) => {
+      totals.totalIncomes += monthIncome.received ? monthIncome.amount : 0;
+      return totals;
+    }, totals);
+
+    month.totalExpenses = totals.totalExpenses;
+    month.totalIncomes = totals.totalIncomes;
+    month.totalUnpaid = totals.totalUnpaid;
+    month.difference = totals.totalIncomes - totals.totalExpenses;
+    const currentBalance =
+      totals.totalIncomes - totals.totalExpenses + totals.totalUnpaid;
+    month.currentBalance = currentBalance < 0 ? 0 : currentBalance;
   }
 }
