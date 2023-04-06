@@ -11,6 +11,8 @@ import { MonthStatus } from 'src/enums/month-status.enum';
 import { ExpensesService } from 'src/expenses/expenses.service';
 import { IncomesService } from 'src/incomes/incomes.service';
 import { Repository } from 'typeorm';
+import { UpdateMonthExpenseDTO } from './dto/month-expense-update.dto';
+import { UpdateMonthIncomeDTO } from './dto/month-income-update.dto';
 
 @Injectable()
 export class MonthsService {
@@ -146,6 +148,50 @@ export class MonthsService {
     newMonthIncome.amount = income.amount;
     newMonthIncome.received = false;
     month.monthIncomes.push(newMonthIncome);
+    return this.monthRepository.save(month);
+  }
+
+  async updateExpenseByMonthExpenseId(
+    monthId: number,
+    monthExpenseId: number,
+    updateMonthExpenseDTO: UpdateMonthExpenseDTO,
+  ) {
+    const exists = await this.monthRepository.count({
+      where: { monthExpenses: { id: monthExpenseId } },
+    });
+    if (exists == 0) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Month expense not found',
+      });
+    }
+    const month = await this.findById(monthId);
+    const monthExpense = month.monthExpenses.find(
+      (monthExpense) => monthExpense.id === monthExpenseId,
+    );
+    Object.assign(monthExpense, updateMonthExpenseDTO);
+    return this.monthRepository.save(month);
+  }
+
+  async updateIncomeByMonthIncomeId(
+    monthId: number,
+    monthIncomeId: number,
+    updateMonthIncomeDTO: UpdateMonthIncomeDTO,
+  ) {
+    const exists = await this.monthRepository.count({
+      where: { monthIncomes: { id: monthIncomeId } },
+    });
+    if (exists == 0) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Month income not found',
+      });
+    }
+    const month = await this.findById(monthId);
+    const monthIncome = month.monthIncomes.find(
+      (monthIncome) => monthIncome.id === monthIncomeId,
+    );
+    Object.assign(monthIncome, updateMonthIncomeDTO);
     return this.monthRepository.save(month);
   }
 }

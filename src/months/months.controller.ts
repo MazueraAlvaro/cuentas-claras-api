@@ -1,4 +1,14 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { UpdateMonthExpenseDTO } from './dto/month-expense-update.dto';
+import { UpdateMonthIncomeDTO } from './dto/month-income-update.dto';
 import { MonthsService } from './months.service';
 
 @Controller('months')
@@ -29,5 +39,31 @@ export class MonthsController {
     @Param('month') monthId: number,
   ) {
     return this.monthsService.addIncomeById(monthId, expenseId);
+  }
+
+  @Patch('/:month/monthExpenses/:monthExpense')
+  updateMonthExpense(
+    @Param('monthExpense', ParseIntPipe) monthExpenseId: number,
+    @Param('month', ParseIntPipe) monthId: number,
+    @Body() updateMonthExpenseDTO: UpdateMonthExpenseDTO,
+  ) {
+    return this.monthsService.updateExpenseByMonthExpenseId(
+      monthId,
+      monthExpenseId,
+      updateMonthExpenseDTO,
+    );
+  }
+
+  @Patch('/:month/monthIncomes/:monthIncome')
+  updateMonthIncome(
+    @Param('monthIncome', ParseIntPipe) monthIncomeId: number,
+    @Param('month', ParseIntPipe) monthId: number,
+    @Body() updateMonthIncomeDTO: UpdateMonthIncomeDTO,
+  ) {
+    return this.monthsService.updateIncomeByMonthIncomeId(
+      monthId,
+      monthIncomeId,
+      updateMonthIncomeDTO,
+    );
   }
 }
