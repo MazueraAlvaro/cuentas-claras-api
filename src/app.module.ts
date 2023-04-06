@@ -17,6 +17,7 @@ console.log(join(__dirname, 'database', 'entities', '*.entity.ts'));
       entities: [join(__dirname, 'database', 'entities', '*.entity.{js,ts}')],
       autoLoadEntities: true,
       synchronize: false,
+      logging: true,
     }),
     ExpensesModule,
     IncomesModule,

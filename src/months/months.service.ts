@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MonthExpense } from 'src/database/entities/month-expense.entity';
 import { MonthIncome } from 'src/database/entities/month-income.entity';
@@ -16,6 +20,14 @@ export class MonthsService {
     private readonly incomesService: IncomesService,
     private readonly expensesService: ExpensesService,
   ) {}
+
+  findById(id) {
+    return this.monthRepository.findOne({
+      where: { id },
+      relations: ['monthExpenses.expense', 'monthIncomes.income'],
+    });
+  }
+
   async generateMonth(month: Date) {
     const exists = await this.monthRepository.findOne({ where: { month } });
     if (exists) {
@@ -67,5 +79,73 @@ export class MonthsService {
       return monthExpense;
     });
     return { monthExpenses, totalExpenses };
+  }
+
+  async addExpenseById(monthId: number, expenseId: number) {
+    const exists = await this.monthRepository.count({
+      where: { monthExpenses: { expenseId }, id: monthId },
+    });
+    if (exists > 0) {
+      throw new ForbiddenException({
+        error: true,
+        message: 'The expense already exists for the month',
+      });
+    }
+    const month = await this.monthRepository.findOneBy({ id: monthId });
+    if (!month) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Month not found',
+      });
+    }
+    let expense;
+    try {
+      expense = await this.expensesService.findOne(expenseId);
+    } catch (e) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Expense not found',
+      });
+    }
+    const newMonthExpense = new MonthExpense();
+    newMonthExpense.expense = expense;
+    newMonthExpense.amount = expense.amount;
+    newMonthExpense.paid = false;
+    month.monthExpenses.push(newMonthExpense);
+    return this.monthRepository.save(month);
+  }
+
+  async addIncomeById(monthId: number, incomeId: number) {
+    const exists = await this.monthRepository.count({
+      where: { monthIncomes: { incomeId }, id: monthId },
+    });
+    if (exists > 0) {
+      throw new ForbiddenException({
+        error: true,
+        message: 'The income already exists for the month',
+      });
+    }
+    const month = await this.monthRepository.findOneBy({ id: monthId });
+    if (!month) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Month not found',
+      });
+    }
+    let income;
+    try {
+      income = await this.incomesService.findOne(incomeId);
+    } catch (e) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Income not found',
+      });
+    }
+    const newMonthIncome = new MonthIncome();
+    newMonthIncome.income = income;
+    newMonthIncome.amount = income.amount;
+    newMonthIncome.received = false;
+    month.monthIncomes.push(newMonthIncome);
+    return this.monthRepository.save(month);
   }
 }

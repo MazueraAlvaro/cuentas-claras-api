@@ -37,12 +37,14 @@ export class Month {
 
   @OneToMany(() => MonthIncome, (monthIncome) => monthIncome.month, {
     eager: true,
+    cascade: true,
   })
   @JoinTable()
   monthIncomes: MonthIncome[];
 
-  @OneToMany(() => MonthIncome, (monthIncome) => monthIncome.month, {
+  @OneToMany(() => MonthExpense, (monthExpense) => monthExpense.month, {
     eager: true,
+    cascade: true,
   })
   @JoinTable()
   monthExpenses: MonthExpense[];
