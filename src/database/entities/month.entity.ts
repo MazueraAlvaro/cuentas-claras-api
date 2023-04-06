@@ -6,6 +6,7 @@ import {
   JoinTable,
   OneToMany,
 } from 'typeorm';
+import { MonthExpense } from './month-expense.entity';
 import { MonthIncome } from './month-income.entity';
 
 @Entity()
@@ -39,4 +40,10 @@ export class Month {
   })
   @JoinTable()
   monthIncomes: MonthIncome[];
+
+  @OneToMany(() => MonthIncome, (monthIncome) => monthIncome.month, {
+    eager: true,
+  })
+  @JoinTable()
+  monthExpenses: MonthExpense[];
 }

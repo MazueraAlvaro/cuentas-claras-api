@@ -1,4 +1,4 @@
 export enum MonthStatus {
-  OPEN,
-  CLOSE,
+  OPEN = 'OPEN',
+  CLOSE = 'CLOSED',
 }

@@ -22,7 +22,10 @@ export class SeedTypes1690668198104 implements MigrationInterface {
 
     await queryRunner.query(
       `INSERT INTO expense (name, description, amount, isRecurring, dueDay, startAt, expenseTypeId) VALUES 
-      ('Arriendo', 'Arriendo apartamento', 1800000, true, 1,'2022-10-01', 1)`,
+      ('Arriendo', 'Arriendo apartamento', 1800000, true, 1,'2022-10-01', 1),
+      ('Carro', 'Crédito de vehículo Santander', 1608694, true, 3, '2022-09-01', 2),
+      ('ICETEX', 'Crédito euducativo ICETEX', 550000, true, 3, '2020-06-23', 2),
+      ('GDO', 'Gases de Occidente', 15000, true, 15, '2022-10-01', 1)`,
     );
   }
 

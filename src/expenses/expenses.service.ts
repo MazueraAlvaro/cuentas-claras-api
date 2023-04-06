@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expense } from 'src/database/entities/expense.entity';
-import { Repository } from 'typeorm';
+import { IsNull, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { UpdateExpenseDTO } from './dto/expense-update.dto';
 import { CreateExpenseDTO } from './dto/expense.dto';
 
@@ -27,5 +27,22 @@ export class ExpensesService {
   async update(id: number, updateExpenseDTO: UpdateExpenseDTO) {
     const expense = await this.findOne(id);
     return this.expensesRepository.save({ ...expense, ...updateExpenseDTO });
+  }
+
+  getExpensesByMonth(month: Date) {
+    return this.expensesRepository.find({
+      where: [
+        {
+          isRecurring: true,
+          startAt: LessThanOrEqual(month),
+          endAt: MoreThanOrEqual(month),
+        },
+        {
+          isRecurring: true,
+          startAt: LessThanOrEqual(month),
+          endAt: IsNull(),
+        },
+      ],
+    });
   }
 }
