@@ -4,8 +4,10 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { IncomeType } from './income-type.entity';
+import { MonthIncome } from './month-income.entity';
 
 @Entity()
 export class Income {
@@ -35,4 +37,7 @@ export class Income {
   })
   @JoinTable()
   incomeType: IncomeType;
+
+  @OneToMany(() => MonthIncome, (monthIncome) => monthIncome.income)
+  monthIncomes: MonthIncome[];
 }
