@@ -19,6 +19,11 @@ export class ExpensesController {
     return this.expensesService.findAll();
   }
 
+  @Get('/types')
+  getTypes() {
+    return this.expensesService.findAllTypes();
+  }
+
   @Get('/:id')
   async findById(@Param('id') id: number) {
     try {

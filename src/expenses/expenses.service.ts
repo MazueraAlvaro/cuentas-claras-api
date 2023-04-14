@@ -4,12 +4,15 @@ import { Expense } from 'src/database/entities/expense.entity';
 import { IsNull, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { UpdateExpenseDTO } from './dto/expense-update.dto';
 import { CreateExpenseDTO } from './dto/expense.dto';
+import { ExpenseType } from 'src/database/entities/expense-type.entity';
 
 @Injectable()
 export class ExpensesService {
   constructor(
     @InjectRepository(Expense)
     private readonly expensesRepository: Repository<Expense>,
+    @InjectRepository(ExpenseType)
+    private readonly expenseTypeRepository: Repository<ExpenseType>,
   ) {}
 
   findAll(): Promise<Expense[]> {
@@ -20,8 +23,9 @@ export class ExpensesService {
     return this.expensesRepository.findOneByOrFail({ id });
   }
 
-  create(createExpenseDTO: CreateExpenseDTO) {
-    return this.expensesRepository.save(createExpenseDTO);
+  async create(createExpenseDTO: CreateExpenseDTO) {
+    const expense = await this.expensesRepository.save(createExpenseDTO);
+    return this.findOne(expense.id);
   }
 
   async update(id: number, updateExpenseDTO: UpdateExpenseDTO) {
@@ -44,5 +48,9 @@ export class ExpensesService {
         },
       ],
     });
+  }
+
+  findAllTypes() {
+    return this.expenseTypeRepository.find();
   }
 }
