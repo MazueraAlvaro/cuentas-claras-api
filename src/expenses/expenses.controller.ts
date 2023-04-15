@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -48,5 +49,10 @@ export class ExpensesController {
     } catch (error) {
       throw new NotFoundException();
     }
+  }
+
+  @Delete('/:id')
+  delete(@Param('id') id: number) {
+    return this.expensesService.delete(id);
   }
 }

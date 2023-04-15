@@ -53,4 +53,8 @@ export class ExpensesService {
   findAllTypes() {
     return this.expenseTypeRepository.find();
   }
+
+  delete(id: number) {
+    return this.expensesRepository.delete(id);
+  }
 }
