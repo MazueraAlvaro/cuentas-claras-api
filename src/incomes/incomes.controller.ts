@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -17,6 +18,11 @@ export class IncomesController {
   @Get('/')
   findAll() {
     return this.incomesService.findAll();
+  }
+
+  @Get('/types')
+  getTypes() {
+    return this.incomesService.findAllTypes();
   }
 
   @Get('/:id')
@@ -43,5 +49,10 @@ export class IncomesController {
     } catch (error) {
       throw new NotFoundException();
     }
+  }
+
+  @Delete('/:id')
+  delete(@Param('id') id: number) {
+    return this.incomesService.delete(id);
   }
 }
