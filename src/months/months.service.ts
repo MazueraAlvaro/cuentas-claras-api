@@ -30,6 +30,13 @@ export class MonthsService {
     });
   }
 
+  findByDate(date: Date) {
+    return this.monthRepository.findOne({
+      where: { month: date },
+      relations: ['monthExpenses.expense', 'monthIncomes.income'],
+    });
+  }
+
   async generateMonth(month: Date) {
     const exists = await this.monthRepository.findOne({ where: { month } });
     if (exists) {

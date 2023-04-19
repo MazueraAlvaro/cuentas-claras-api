@@ -20,6 +20,11 @@ export class MonthsController {
     return this.monthsService.findById(month);
   }
 
+  @Get('/byDate/:date')
+  findByDate(@Param('date') date: Date) {
+    return this.monthsService.findByDate(date);
+  }
+
   @Post('/generate/:month')
   generateMonth(@Param('month') month: Date) {
     return this.monthsService.generateMonth(month);
