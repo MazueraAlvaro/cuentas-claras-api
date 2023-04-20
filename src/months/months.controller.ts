@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -21,8 +22,12 @@ export class MonthsController {
   }
 
   @Get('/byDate/:date')
-  findByDate(@Param('date') date: Date) {
-    return this.monthsService.findByDate(date);
+  async findByDate(@Param('date') date: Date) {
+    try {
+      return await this.monthsService.findByDate(date);
+    } catch (error) {
+      throw new NotFoundException('Mes no encontrado');
+    }
   }
 
   @Post('/generate/:month')

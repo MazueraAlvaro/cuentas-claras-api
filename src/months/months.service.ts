@@ -31,7 +31,7 @@ export class MonthsService {
   }
 
   findByDate(date: Date) {
-    return this.monthRepository.findOne({
+    return this.monthRepository.findOneOrFail({
       where: { month: date },
       relations: ['monthExpenses.expense', 'monthIncomes.income'],
     });
