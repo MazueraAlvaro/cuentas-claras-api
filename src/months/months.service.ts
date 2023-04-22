@@ -90,7 +90,7 @@ export class MonthsService {
         message: 'The expense already exists for the month',
       });
     }
-    const month = await this.monthRepository.findOneBy({ id: monthId });
+    const month = await this.findById(monthId);
     if (!month) {
       throw new NotFoundException({
         error: true,
@@ -111,6 +111,7 @@ export class MonthsService {
     newMonthExpense.amount = expense.amount;
     newMonthExpense.paid = false;
     month.monthExpenses.push(newMonthExpense);
+    this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
   }
 
@@ -124,7 +125,7 @@ export class MonthsService {
         message: 'The income already exists for the month',
       });
     }
-    const month = await this.monthRepository.findOneBy({ id: monthId });
+    const month = await this.findById(monthId);
     if (!month) {
       throw new NotFoundException({
         error: true,
@@ -145,6 +146,7 @@ export class MonthsService {
     newMonthIncome.amount = income.amount;
     newMonthIncome.received = false;
     month.monthIncomes.push(newMonthIncome);
+    this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
   }
 
