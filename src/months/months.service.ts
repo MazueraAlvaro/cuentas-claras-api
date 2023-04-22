@@ -194,6 +194,54 @@ export class MonthsService {
     return this.monthRepository.save(month);
   }
 
+  async deleteMonthExpenseById(monthId: number, monthExpenseId: number) {
+    const exists = await this.monthRepository.count({
+      where: { monthExpenses: { id: monthExpenseId }, id: monthId },
+    });
+    if (exists <= 0) {
+      throw new ForbiddenException({
+        error: true,
+        message: 'The expense does not exist for the month',
+      });
+    }
+    const month = await this.findById(monthId);
+    if (!month) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Month not found',
+      });
+    }
+    month.monthExpenses = month.monthExpenses.filter(
+      (monthExpense) => monthExpense.id !== monthExpenseId,
+    );
+    this.calculateAndUpdateTotals(month);
+    return this.monthRepository.save(month);
+  }
+
+  async deleteMonthIncomeById(monthId: number, monthIncomeId: number) {
+    const exists = await this.monthRepository.count({
+      where: { monthIncomes: { id: monthIncomeId }, id: monthId },
+    });
+    if (exists <= 0) {
+      throw new ForbiddenException({
+        error: true,
+        message: 'The income does not exist for the month',
+      });
+    }
+    const month = await this.findById(monthId);
+    if (!month) {
+      throw new NotFoundException({
+        error: true,
+        message: 'Month not found',
+      });
+    }
+    month.monthIncomes = month.monthIncomes.filter(
+      (monthIncome) => monthIncome.id !== monthIncomeId,
+    );
+    this.calculateAndUpdateTotals(month);
+    return this.monthRepository.save(month);
+  }
+
   private calculateAndUpdateTotals(month: Month) {
     const totals = {
       totalExpenses: 0,

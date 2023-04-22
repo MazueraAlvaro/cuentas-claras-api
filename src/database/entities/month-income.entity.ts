@@ -19,7 +19,9 @@ export class MonthIncome {
   @Column()
   received: boolean;
 
-  @ManyToOne(() => Month, (month) => month.monthIncomes)
+  @ManyToOne(() => Month, (month) => month.monthIncomes, {
+    orphanedRowAction: 'delete',
+  })
   public month: Month;
 
   @ManyToOne(() => Income, (income) => income.monthIncomes)

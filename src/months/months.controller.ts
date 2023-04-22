@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -41,6 +42,22 @@ export class MonthsController {
     @Param('month') monthId: number,
   ) {
     return this.monthsService.addExpenseById(monthId, expenseId);
+  }
+
+  @Delete('/:month/deleteMonthExpense/:monthExpense')
+  deleteMonthExpense(
+    @Param('monthExpense', ParseIntPipe) monthExpenseId: number,
+    @Param('month', ParseIntPipe) monthId: number,
+  ) {
+    return this.monthsService.deleteMonthExpenseById(monthId, monthExpenseId);
+  }
+
+  @Delete('/:month/deleteMonthIncome/:monthIncome')
+  deleteMonthIncome(
+    @Param('monthIncome', ParseIntPipe) monthIncomeId: number,
+    @Param('month', ParseIntPipe) monthId: number,
+  ) {
+    return this.monthsService.deleteMonthIncomeById(monthId, monthIncomeId);
   }
 
   @Post('/:month/addIncome/:expense')
