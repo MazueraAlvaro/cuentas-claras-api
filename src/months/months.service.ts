@@ -268,4 +268,10 @@ export class MonthsService {
       totals.totalIncomes - totals.totalExpenses + totals.totalUnpaid;
     month.currentBalance = currentBalance < 0 ? 0 : currentBalance;
   }
+
+  async closeMonthById(id) {
+    const month = await this.findById(id);
+    month.status = MonthStatus.CLOSE;
+    return this.monthRepository.save(month);
+  }
 }

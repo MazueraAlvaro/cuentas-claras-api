@@ -36,6 +36,11 @@ export class MonthsController {
     return this.monthsService.generateMonth(month);
   }
 
+  @Post('/close/:monthId')
+  closeMonth(@Param('monthId', ParseIntPipe) id: number) {
+    return this.monthsService.closeMonthById(id);
+  }
+
   @Post('/:month/addExpense/:expense')
   addExpense(
     @Param('expense') expenseId: number,
