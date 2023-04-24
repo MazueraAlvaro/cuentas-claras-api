@@ -1,0 +1,17 @@
+.classpath
+.codegen
+.dockerignore
+.editorconfig
+.git
+.github
+.gitignore
+.helm
+.env
+.pipeline
+.project
+.settings
+.vscode
+docker-compose\*
+Dockerfile
+node_modules
+README.md
