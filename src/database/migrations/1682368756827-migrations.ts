@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class migrations1680743614417 implements MigrationInterface {
-  name = 'migrations1680743614417';
+export class migrations1682368756827 implements MigrationInterface {
+  name = 'migrations1682368756827';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -17,7 +17,7 @@ export class migrations1680743614417 implements MigrationInterface {
       `CREATE TABLE \`month\` (\`id\` int NOT NULL AUTO_INCREMENT, \`month\` date NOT NULL, \`status\` enum ('OPEN', 'CLOSED') NOT NULL DEFAULT 'OPEN', \`totalIncomes\` int NOT NULL DEFAULT '0', \`totalExpenses\` int NOT NULL DEFAULT '0', \`difference\` int NOT NULL DEFAULT '0', \`currentBalance\` int NOT NULL DEFAULT '0', \`totalUnpaid\` int NOT NULL DEFAULT '0', PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
-      `CREATE TABLE \`month_expense\` (\`id\` int NOT NULL AUTO_INCREMENT, \`monthId\` int NOT NULL, \`expenseId\` int NOT NULL, \`amount\` int NOT NULL, \`paid\` tinyint NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE \`month_expense\` (\`id\` int NOT NULL AUTO_INCREMENT, \`monthId\` int NOT NULL, \`expenseId\` int NOT NULL, \`amount\` int NOT NULL, \`paid\` tinyint NOT NULL, \`creditCard\` tinyint NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
       `CREATE TABLE \`expense\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` varchar(255) NOT NULL, \`description\` varchar(255) NOT NULL, \`amount\` int NOT NULL, \`isRecurring\` tinyint NOT NULL, \`dueDay\` int NOT NULL, \`startAt\` date NULL, \`endAt\` date NULL, \`expenseTypeId\` int NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,

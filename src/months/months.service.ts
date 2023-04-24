@@ -75,6 +75,7 @@ export class MonthsService {
       monthExpense.expense = expense;
       monthExpense.amount = expense.amount;
       monthExpense.paid = false;
+      monthExpense.creditCard = false;
       return monthExpense;
     });
     return monthExpenses;
@@ -110,6 +111,7 @@ export class MonthsService {
     newMonthExpense.expense = expense;
     newMonthExpense.amount = expense.amount;
     newMonthExpense.paid = false;
+    newMonthExpense.creditCard = false;
     month.monthExpenses.push(newMonthExpense);
     this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
@@ -247,11 +249,15 @@ export class MonthsService {
   private calculateAndUpdateTotals(month: Month) {
     const totals = {
       totalExpenses: 0,
+      totalExpensesCreditCard: 0,
       totalIncomes: 0,
       totalUnpaid: 0,
     };
     month.monthExpenses.reduce((totals, monthExpense) => {
       totals.totalExpenses += monthExpense.amount;
+      totals.totalExpensesCreditCard += monthExpense.creditCard
+        ? monthExpense.amount
+        : 0;
       totals.totalUnpaid += monthExpense.paid ? 0 : monthExpense.amount;
       return totals;
     }, totals);
@@ -263,9 +269,15 @@ export class MonthsService {
     month.totalExpenses = totals.totalExpenses;
     month.totalIncomes = totals.totalIncomes;
     month.totalUnpaid = totals.totalUnpaid;
-    month.difference = totals.totalIncomes - totals.totalExpenses;
+    month.difference =
+      totals.totalIncomes -
+      totals.totalExpenses +
+      totals.totalExpensesCreditCard;
     const currentBalance =
-      totals.totalIncomes - totals.totalExpenses + totals.totalUnpaid;
+      totals.totalIncomes -
+      totals.totalExpenses +
+      totals.totalUnpaid +
+      totals.totalExpensesCreditCard;
     month.currentBalance = currentBalance < 0 ? 0 : currentBalance;
   }
 

@@ -8,4 +8,8 @@ export class UpdateMonthExpenseDTO {
   @IsOptional()
   @IsBoolean()
   paid: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  creditCard: boolean;
 }
