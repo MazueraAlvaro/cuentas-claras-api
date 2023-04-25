@@ -9,7 +9,11 @@ export class SeedTypes1690668198104 implements MigrationInterface {
       ('Tributario', 'Gastos tributarios como impuestos de renta o predial'),
       ('Seguros', 'Seguros de vida o todo riesgo de vehiculos'),
       ('Serv. Publicos', 'Servicios publicos como agua, energia o gas'),
-      ('Prest. Sociales', 'Pagos por motivo de prestaciones sociales como salud y pensión');`,
+      ('Prest. Sociales', 'Pagos por motivo de prestaciones sociales como salud y pensión'),
+      ('Inversiones', 'Dinero destinado a inversiones'),
+      ('Ahorro', 'Dinero destinado a ahorro'),
+      ('Ayudas', 'Dinero destinado a ayudas'),
+      ('Otros', 'Otros gastos');`,
     );
 
     await queryRunner.query(
