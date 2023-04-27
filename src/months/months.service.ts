@@ -261,7 +261,7 @@ export class MonthsService {
         : 0;
       totals.totalUnpaid += monthExpense.paid ? 0 : monthExpense.amount;
       totals.totalUnpaidCreditCard +=
-        monthExpense.paid && monthExpense.creditCard ? 0 : monthExpense.amount;
+        !monthExpense.paid && monthExpense.creditCard ? monthExpense.amount : 0;
       return totals;
     }, totals);
     month.monthIncomes.reduce((totals, monthIncome) => {
