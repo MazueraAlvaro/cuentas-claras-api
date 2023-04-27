@@ -252,6 +252,7 @@ export class MonthsService {
       totalExpensesCreditCard: 0,
       totalIncomes: 0,
       totalUnpaid: 0,
+      totalUnpaidCreditCard: 0,
     };
     month.monthExpenses.reduce((totals, monthExpense) => {
       totals.totalExpenses += monthExpense.amount;
@@ -259,6 +260,8 @@ export class MonthsService {
         ? monthExpense.amount
         : 0;
       totals.totalUnpaid += monthExpense.paid ? 0 : monthExpense.amount;
+      totals.totalUnpaidCreditCard +=
+        monthExpense.paid && monthExpense.creditCard ? 0 : monthExpense.amount;
       return totals;
     }, totals);
     month.monthIncomes.reduce((totals, monthIncome) => {
@@ -277,7 +280,8 @@ export class MonthsService {
       totals.totalIncomes -
       totals.totalExpenses +
       totals.totalUnpaid +
-      totals.totalExpensesCreditCard;
+      totals.totalExpensesCreditCard -
+      totals.totalUnpaidCreditCard;
     month.currentBalance = currentBalance < 0 ? 0 : currentBalance;
   }
 
