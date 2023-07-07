@@ -7,6 +7,7 @@ services:
   db:
     image: mariadb
     environment:
+      TZ: 'America/Bogota'
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: cuentas_claras
       MYSQL_USER: user

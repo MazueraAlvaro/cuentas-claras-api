@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expense } from 'src/database/entities/expense.entity';
-import { IsNull, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import {
+  Between,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { UpdateExpenseDTO } from './dto/expense-update.dto';
 import { CreateExpenseDTO } from './dto/expense.dto';
 import { ExpenseType } from 'src/database/entities/expense-type.entity';
@@ -47,6 +53,22 @@ export class ExpensesService {
           endAt: IsNull(),
         },
       ],
+    });
+  }
+
+  getExpensesHistory(from: string, to: string) {
+    return this.expensesRepository.find({
+      where: [
+        {
+          monthExpenses: {
+            month: {
+              month: Between(from as unknown as Date, to as unknown as Date),
+            },
+          },
+        },
+      ],
+      relations: ['monthExpenses.month'],
+      loadEagerRelations: false,
     });
   }
 
