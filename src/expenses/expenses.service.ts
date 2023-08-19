@@ -56,7 +56,11 @@ export class ExpensesService {
     });
   }
 
-  getExpensesHistory(from: string, to: string) {
+  getExpensesHistory(
+    from: string,
+    to: string,
+    expenseId: number | null = null,
+  ) {
     return this.expensesRepository.find({
       where: [
         {
@@ -65,6 +69,7 @@ export class ExpensesService {
               month: Between(from as unknown as Date, to as unknown as Date),
             },
           },
+          ...(expenseId && { id: expenseId }),
         },
       ],
       relations: ['monthExpenses.month'],

@@ -4,6 +4,8 @@ export interface MonthAccumulated {
   amount: number;
   month: number;
   paid: boolean;
+  monthName: string;
+  year: number;
 }
 
 export interface ExpenseAccumulated {

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export const monthDiff = (dateFrom: Date, dateTo: Date) => {
   return (
     dateTo.getMonth() -
@@ -6,19 +8,25 @@ export const monthDiff = (dateFrom: Date, dateTo: Date) => {
   );
 };
 
-export const getMonthNames = (fromDate, toDate) => {
-  const initMonth = fromDate.getMonth();
-  const totalMonths = monthDiff(fromDate, toDate);
-  return Array(totalMonths + 1)
-    .fill('')
-    .map((val, index) => {
-      const monthIndex = (initMonth + index) % 12;
-      const month = new Date(
-        `2023-${(monthIndex + 1).toString().padStart(2, '0')}-02`,
-      ).toLocaleString('es-CO', { month: 'long' });
-      return {
-        name: month.charAt(0).toUpperCase() + month.slice(1),
-        index: monthIndex,
-      };
+export const getMonthNames = (fromDate: Date, toDate: Date) => {
+  const months = [];
+  moment.locale('es-MX');
+  const currentMonth = moment(fromDate);
+  while (currentMonth.isSameOrBefore(toDate)) {
+    months.push({
+      name: toPascalCase(currentMonth.format('MMMM')),
+      index: currentMonth.month(),
+      year: currentMonth.year(),
     });
+    currentMonth.add(1, 'months');
+  }
+  return months;
+};
+
+const toPascalCase = (value: string) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
+
+export const getMonthNameByDate = (date: Date) => {
+  const month = date.toLocaleString('es-CO', { month: 'long' });
+  return month.charAt(0).toUpperCase() + month.slice(1);
 };

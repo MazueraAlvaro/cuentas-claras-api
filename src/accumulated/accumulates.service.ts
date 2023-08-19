@@ -4,15 +4,20 @@ import {
   ExpenseAccumulated,
   MonthAccumulated,
 } from './dto/expense-accumulated.dto';
-import { getMonthNames } from 'src/utils/month.util';
+import { getMonthNameByDate, getMonthNames } from 'src/utils/month.util';
 
 @Injectable()
 export class AccumulatedService {
   constructor(private readonly expensesService: ExpensesService) {}
-  async getExpensesAccumulated(from: string, to: string) {
+  async getExpensesAccumulated(
+    from: string,
+    to: string,
+    expenseId: number | null = null,
+  ) {
     const history = await this.expensesService.getExpensesHistory(
       from.slice(0, 8) + '00',
       to.slice(0, 8) + '00',
+      expenseId,
     );
     const data: ExpenseAccumulated[] = history.map((expense) => {
       const { monthExpenses, ...expenseData } = expense;
@@ -27,6 +32,8 @@ export class AccumulatedService {
           amount: monthExpense.amount,
           paid: monthExpense.paid,
           month: month.getMonth(),
+          monthName: getMonthNameByDate(month),
+          year: month.getFullYear(),
         };
       });
 
@@ -44,5 +51,19 @@ export class AccumulatedService {
       data,
       months: getMonthNames(fromDate, toDate),
     };
+  }
+
+  async getExpenseAccumulated(
+    fromDate: string,
+    toDate: string,
+    expenseId: number,
+  ) {
+    const data = await this.getExpensesAccumulated(fromDate, toDate, expenseId);
+    const chartData = data.data.flatMap((history) => {
+      return history.months.map((month) => {
+        return { amount: month.amount, month: month.monthName };
+      });
+    });
+    return { data, chartData };
   }
 }
