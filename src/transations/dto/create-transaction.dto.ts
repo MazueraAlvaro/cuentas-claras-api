@@ -1,7 +1,7 @@
 import { IsDateString, IsNumber, IsObject, IsString } from 'class-validator';
 import { TransactionCategory } from 'src/database/entities/transaction-category.entity';
 
-export class TransactionDTO {
+export class CreateTransactionDTO {
   @IsDateString()
   datetime: Date;
 
@@ -20,6 +20,9 @@ export class TransactionDTO {
   @IsString()
   cardLastDigits: string;
 
-  @IsObject()
-  category: TransactionCategory;
+  @IsNumber()
+  category: number;
+
+  @IsNumber()
+  creditCardId: number;
 }

@@ -1,0 +1,64 @@
+{
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "exchanges": [
+    {
+      "name": "events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "q.sms.received",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "events",
+        "x-dead-letter-routing-key": "sms.received.dlq"
+      }
+    },
+    {
+      "name": "q.sms.received.retry",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 60000,
+        "x-dead-letter-exchange": "events",
+        "x-dead-letter-routing-key": "sms.received"
+      }
+    },
+    {
+      "name": "q.sms.received.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "events",
+      "vhost": "/",
+      "destination": "q.sms.received",
+      "destination_type": "queue",
+      "routing_key": "sms.received",
+      "arguments": {}
+    },
+    {
+      "source": "events",
+      "vhost": "/",
+      "destination": "q.sms.received.dlq",
+      "destination_type": "queue",
+      "routing_key": "sms.received.dlq",
+      "arguments": {}
+    }
+  ]
+}

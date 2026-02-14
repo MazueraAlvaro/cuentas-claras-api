@@ -1,20 +1,23 @@
-version: '3.9'
 
 volumes:
   data:
-
+    driver: local
+  rabbitmq-lib:
+    driver: local
+  rabbitmq-log:
+    driver: local
 services:
   db:
     image: mariadb
     environment:
       TZ: 'America/Bogota'
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: cuentas_claras
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: user
       MYSQL_PASSWORD: password
       MYSQL_ROOT_HOST: '%'
     ports:
-      - '3306:3306'
+      - '${DB_PORT}:${DB_PORT}'
     hostname: database
     volumes:
       - data:/var/lib/mysql
@@ -29,3 +32,26 @@ services:
       - 3000:3000
     environment:
       MYSQL_HOST: database
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    configs:
+      - source: rabbitmq-plugins
+        target: /etc/rabbitmq/enabled_plugins
+    volumes:
+      - rabbitmq-lib:/var/lib/rabbitmq/
+      - rabbitmq-log:/var/log/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+
+configs:
+  rabbitmq-plugins:
+    content: "[rabbitmq_management]."
