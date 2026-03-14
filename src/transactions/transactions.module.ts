@@ -13,4 +13,4 @@ import { TransactionCategory } from 'src/database/entities/transaction-category.
     TypeOrmModule.forFeature([Transaction, CreditCard, TransactionCategory]),
   ],
 })
-export class TransationsModule {}
+export class TransactionsModule {}

@@ -2,6 +2,22 @@
   "vhosts": [
     { "name": "/" }
   ],
+  "users": [
+    {
+      "name": "cc_mq_user",
+      "password": "cc_mq_pass",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "cc_mq_user",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
   "exchanges": [
     {
       "name": "events",
@@ -39,6 +55,13 @@
       "name": "q.sms.received.dlq",
       "vhost": "/",
       "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.tx.parsed",
+      "vhost": "/",
+      "durable": false,
       "auto_delete": false,
       "arguments": {}
     }

@@ -1,4 +1,4 @@
-FROM node:19-alpine as build
+FROM node:19-alpine AS build
 
 WORKDIR /cuentas-claras-api
 
@@ -20,4 +20,4 @@ COPY --from=build --chown=node /cuentas-claras-api/dist ./dist
 
 EXPOSE 3000
 
-CMD node ./dist/main.js
+CMD ["node", "./dist/main.js"]
