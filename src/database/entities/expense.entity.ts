@@ -8,11 +8,18 @@ import {
 } from 'typeorm';
 import { ExpenseType } from './expense-type.entity';
 import { MonthExpense } from './month-expense.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Expense {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ nullable: true })
+  userId: number;
+
+  @ManyToOne(() => User)
+  user: User;
 
   @Column({ nullable: false })
   name: string;

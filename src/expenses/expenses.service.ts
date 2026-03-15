@@ -21,36 +21,41 @@ export class ExpensesService {
     private readonly expenseTypeRepository: Repository<ExpenseType>,
   ) {}
 
-  findAll(): Promise<Expense[]> {
-    return this.expensesRepository.find();
+  findAll(userId: number): Promise<Expense[]> {
+    return this.expensesRepository.find({ where: { userId } });
   }
 
-  findOne(id: number): Promise<Expense | null> {
-    return this.expensesRepository.findOneByOrFail({ id });
+  findOne(id: number, userId: number): Promise<Expense | null> {
+    return this.expensesRepository.findOneByOrFail({ id, userId });
   }
 
-  async create(createExpenseDTO: CreateExpenseDTO) {
-    const expense = await this.expensesRepository.save(createExpenseDTO);
-    return this.findOne(expense.id);
+  async create(createExpenseDTO: CreateExpenseDTO, userId: number) {
+    const expense = await this.expensesRepository.save({
+      ...createExpenseDTO,
+      userId,
+    });
+    return this.findOne(expense.id, userId);
   }
 
-  async update(id: number, updateExpenseDTO: UpdateExpenseDTO) {
-    const expense = await this.findOne(id);
+  async update(id: number, updateExpenseDTO: UpdateExpenseDTO, userId: number) {
+    const expense = await this.findOne(id, userId);
     return this.expensesRepository.save({ ...expense, ...updateExpenseDTO });
   }
 
-  getExpensesByMonth(month: Date) {
+  getExpensesByMonth(month: Date, userId: number) {
     return this.expensesRepository.find({
       where: [
         {
           isRecurring: true,
           startAt: LessThanOrEqual(month),
           endAt: MoreThanOrEqual(month),
+          userId,
         },
         {
           isRecurring: true,
           startAt: LessThanOrEqual(month),
           endAt: IsNull(),
+          userId,
         },
       ],
     });
@@ -59,6 +64,7 @@ export class ExpensesService {
   getExpensesHistory(
     from: string,
     to: string,
+    userId: number,
     expenseId: number | null = null,
   ) {
     return this.expensesRepository.find({
@@ -69,6 +75,7 @@ export class ExpensesService {
               month: Between(from as unknown as Date, to as unknown as Date),
             },
           },
+          userId,
           ...(expenseId && { id: expenseId }),
         },
       ],
@@ -81,7 +88,7 @@ export class ExpensesService {
     return this.expenseTypeRepository.find();
   }
 
-  delete(id: number) {
-    return this.expensesRepository.delete(id);
+  delete(id: number, userId: number) {
+    return this.expensesRepository.delete({ id, userId });
   }
 }
