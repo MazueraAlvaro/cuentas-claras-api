@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { join } from 'path';
 import { ExpensesModule } from './expenses/expenses.module';
 import { IncomesModule } from './incomes/incomes.module';
@@ -33,5 +35,6 @@ console.log(join(__dirname, 'database', 'entities', '*.entity.ts'));
     TransactionsModule,
     AuthModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
 export class AppModule {}
