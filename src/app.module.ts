@@ -10,10 +10,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AccumulatedModule } from './accumulated/accumulated.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { AuthModule } from './auth/auth.module';
-console.log(join(__dirname, 'database', 'entities', '*.entity.ts'));
+
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
