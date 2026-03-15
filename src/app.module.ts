@@ -7,6 +7,7 @@ import { MonthsModule } from './months/months.module';
 import { ConfigModule } from '@nestjs/config';
 import { AccumulatedModule } from './accumulated/accumulated.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { AuthModule } from './auth/auth.module';
 console.log(join(__dirname, 'database', 'entities', '*.entity.ts'));
 @Module({
   imports: [
@@ -30,6 +31,7 @@ console.log(join(__dirname, 'database', 'entities', '*.entity.ts'));
     MonthsModule,
     AccumulatedModule,
     TransactionsModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
