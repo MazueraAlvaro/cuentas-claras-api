@@ -23,32 +23,35 @@ export class MonthsService {
     private readonly expensesService: ExpensesService,
   ) {}
 
-  findById(id) {
+  findById(id: number, userId: number) {
     return this.monthRepository.findOne({
-      where: { id },
+      where: { id, userId },
       relations: ['monthExpenses.expense', 'monthIncomes.income'],
     });
   }
 
-  findByDate(date: Date) {
+  findByDate(date: Date, userId: number) {
     return this.monthRepository.findOneOrFail({
-      where: { month: date },
+      where: { month: date, userId },
       relations: ['monthExpenses.expense', 'monthIncomes.income'],
     });
   }
 
-  async generateMonth(month: Date) {
-    const exists = await this.monthRepository.findOne({ where: { month } });
+  async generateMonth(month: Date, userId: number) {
+    const exists = await this.monthRepository.findOne({
+      where: { month, userId },
+    });
     if (exists) {
       throw new ForbiddenException({
         error: true,
         message: 'Month already exists',
       });
     }
-    const monthIncomes = await this.getMonthRecurringIncomes(month);
-    const monthExpenses = await this.getMonthRecurringExpenses(month);
+    const monthIncomes = await this.getMonthRecurringIncomes(month, userId);
+    const monthExpenses = await this.getMonthRecurringExpenses(month, userId);
     const monthEntity = new Month();
     monthEntity.month = month;
+    monthEntity.userId = userId;
     monthEntity.status = MonthStatus.OPEN;
     monthEntity.monthIncomes = monthIncomes;
     monthEntity.monthExpenses = monthExpenses;
@@ -56,21 +59,23 @@ export class MonthsService {
     return this.monthRepository.save(monthEntity);
   }
 
-  private async getMonthRecurringIncomes(month: Date) {
-    const incomes = await this.incomesService.getIncomesByMonth(month);
-    const monthIncomes = incomes.map((income) => {
+  private async getMonthRecurringIncomes(month: Date, userId: number) {
+    const incomes = await this.incomesService.getIncomesByMonth(month, userId);
+    return incomes.map((income) => {
       const monthIncome = new MonthIncome();
       monthIncome.income = income;
       monthIncome.amount = income.amount;
       monthIncome.received = false;
       return monthIncome;
     });
-    return monthIncomes;
   }
 
-  private async getMonthRecurringExpenses(month: Date) {
-    const expenses = await this.expensesService.getExpensesByMonth(month);
-    const monthExpenses = expenses.map((expense) => {
+  private async getMonthRecurringExpenses(month: Date, userId: number) {
+    const expenses = await this.expensesService.getExpensesByMonth(
+      month,
+      userId,
+    );
+    return expenses.map((expense) => {
       const monthExpense = new MonthExpense();
       monthExpense.expense = expense;
       monthExpense.amount = expense.amount;
@@ -78,12 +83,11 @@ export class MonthsService {
       monthExpense.creditCard = false;
       return monthExpense;
     });
-    return monthExpenses;
   }
 
-  async addExpenseById(monthId: number, expenseId: number) {
+  async addExpenseById(monthId: number, expenseId: number, userId: number) {
     const exists = await this.monthRepository.count({
-      where: { monthExpenses: { expenseId }, id: monthId },
+      where: { monthExpenses: { expenseId }, id: monthId, userId },
     });
     if (exists > 0) {
       throw new ForbiddenException({
@@ -91,16 +95,13 @@ export class MonthsService {
         message: 'The expense already exists for the month',
       });
     }
-    const month = await this.findById(monthId);
+    const month = await this.findById(monthId, userId);
     if (!month) {
-      throw new NotFoundException({
-        error: true,
-        message: 'Month not found',
-      });
+      throw new NotFoundException({ error: true, message: 'Month not found' });
     }
     let expense;
     try {
-      expense = await this.expensesService.findOne(expenseId);
+      expense = await this.expensesService.findOne(expenseId, userId);
     } catch (e) {
       throw new NotFoundException({
         error: true,
@@ -117,9 +118,9 @@ export class MonthsService {
     return this.monthRepository.save(month);
   }
 
-  async addIncomeById(monthId: number, incomeId: number) {
+  async addIncomeById(monthId: number, incomeId: number, userId: number) {
     const exists = await this.monthRepository.count({
-      where: { monthIncomes: { incomeId }, id: monthId },
+      where: { monthIncomes: { incomeId }, id: monthId, userId },
     });
     if (exists > 0) {
       throw new ForbiddenException({
@@ -127,21 +128,15 @@ export class MonthsService {
         message: 'The income already exists for the month',
       });
     }
-    const month = await this.findById(monthId);
+    const month = await this.findById(monthId, userId);
     if (!month) {
-      throw new NotFoundException({
-        error: true,
-        message: 'Month not found',
-      });
+      throw new NotFoundException({ error: true, message: 'Month not found' });
     }
     let income;
     try {
-      income = await this.incomesService.findOne(incomeId);
+      income = await this.incomesService.findOne(incomeId, userId);
     } catch (e) {
-      throw new NotFoundException({
-        error: true,
-        message: 'Income not found',
-      });
+      throw new NotFoundException({ error: true, message: 'Income not found' });
     }
     const newMonthIncome = new MonthIncome();
     newMonthIncome.income = income;
@@ -156,9 +151,10 @@ export class MonthsService {
     monthId: number,
     monthExpenseId: number,
     updateMonthExpenseDTO: UpdateMonthExpenseDTO,
+    userId: number,
   ) {
     const exists = await this.monthRepository.count({
-      where: { monthExpenses: { id: monthExpenseId }, id: monthId },
+      where: { monthExpenses: { id: monthExpenseId }, id: monthId, userId },
     });
     if (exists == 0) {
       throw new NotFoundException({
@@ -166,9 +162,9 @@ export class MonthsService {
         message: 'Month expense not found',
       });
     }
-    const month = await this.findById(monthId);
+    const month = await this.findById(monthId, userId);
     const monthExpense = month.monthExpenses.find(
-      (monthExpense) => monthExpense.id === monthExpenseId,
+      (me) => me.id === monthExpenseId,
     );
     Object.assign(monthExpense, updateMonthExpenseDTO);
     this.calculateAndUpdateTotals(month);
@@ -179,9 +175,10 @@ export class MonthsService {
     monthId: number,
     monthIncomeId: number,
     updateMonthIncomeDTO: UpdateMonthIncomeDTO,
+    userId: number,
   ) {
     const exists = await this.monthRepository.count({
-      where: { monthIncomes: { id: monthIncomeId } },
+      where: { monthIncomes: { id: monthIncomeId }, id: monthId, userId },
     });
     if (exists == 0) {
       throw new NotFoundException({
@@ -189,18 +186,22 @@ export class MonthsService {
         message: 'Month income not found',
       });
     }
-    const month = await this.findById(monthId);
+    const month = await this.findById(monthId, userId);
     const monthIncome = month.monthIncomes.find(
-      (monthIncome) => monthIncome.id === monthIncomeId,
+      (mi) => mi.id === monthIncomeId,
     );
     Object.assign(monthIncome, updateMonthIncomeDTO);
     this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
   }
 
-  async deleteMonthExpenseById(monthId: number, monthExpenseId: number) {
+  async deleteMonthExpenseById(
+    monthId: number,
+    monthExpenseId: number,
+    userId: number,
+  ) {
     const exists = await this.monthRepository.count({
-      where: { monthExpenses: { id: monthExpenseId }, id: monthId },
+      where: { monthExpenses: { id: monthExpenseId }, id: monthId, userId },
     });
     if (exists <= 0) {
       throw new ForbiddenException({
@@ -208,23 +209,24 @@ export class MonthsService {
         message: 'The expense does not exist for the month',
       });
     }
-    const month = await this.findById(monthId);
+    const month = await this.findById(monthId, userId);
     if (!month) {
-      throw new NotFoundException({
-        error: true,
-        message: 'Month not found',
-      });
+      throw new NotFoundException({ error: true, message: 'Month not found' });
     }
     month.monthExpenses = month.monthExpenses.filter(
-      (monthExpense) => monthExpense.id !== monthExpenseId,
+      (me) => me.id !== monthExpenseId,
     );
     this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
   }
 
-  async deleteMonthIncomeById(monthId: number, monthIncomeId: number) {
+  async deleteMonthIncomeById(
+    monthId: number,
+    monthIncomeId: number,
+    userId: number,
+  ) {
     const exists = await this.monthRepository.count({
-      where: { monthIncomes: { id: monthIncomeId }, id: monthId },
+      where: { monthIncomes: { id: monthIncomeId }, id: monthId, userId },
     });
     if (exists <= 0) {
       throw new ForbiddenException({
@@ -232,15 +234,12 @@ export class MonthsService {
         message: 'The income does not exist for the month',
       });
     }
-    const month = await this.findById(monthId);
+    const month = await this.findById(monthId, userId);
     if (!month) {
-      throw new NotFoundException({
-        error: true,
-        message: 'Month not found',
-      });
+      throw new NotFoundException({ error: true, message: 'Month not found' });
     }
     month.monthIncomes = month.monthIncomes.filter(
-      (monthIncome) => monthIncome.id !== monthIncomeId,
+      (mi) => mi.id !== monthIncomeId,
     );
     this.calculateAndUpdateTotals(month);
     return this.monthRepository.save(month);
@@ -285,8 +284,8 @@ export class MonthsService {
     month.currentBalance = currentBalance < 0 ? 0 : currentBalance;
   }
 
-  async closeMonthById(id) {
-    const month = await this.findById(id);
+  async closeMonthById(id: number, userId: number) {
+    const month = await this.findById(id, userId);
     month.status = MonthStatus.CLOSE;
     return this.monthRepository.save(month);
   }

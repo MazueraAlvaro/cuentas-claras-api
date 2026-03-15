@@ -9,6 +9,9 @@ export class ExpenseType {
   @Column({ nullable: false })
   name: string;
 
+  @Column({ unique: true, length: 20 })
+  code: string;
+
   @Column()
   description: string;
 

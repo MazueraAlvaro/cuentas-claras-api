@@ -4,15 +4,23 @@ import {
   Column,
   PrimaryGeneratedColumn,
   JoinTable,
+  ManyToOne,
   OneToMany,
 } from 'typeorm';
 import { MonthExpense } from './month-expense.entity';
 import { MonthIncome } from './month-income.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Month {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ nullable: true })
+  userId: number;
+
+  @ManyToOne(() => User)
+  user: User;
 
   @Column({ type: 'date', nullable: false })
   month: Date;

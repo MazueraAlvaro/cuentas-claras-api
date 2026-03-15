@@ -7,11 +7,18 @@ import {
 } from 'typeorm';
 import { CreditCard } from './credit-card.entity';
 import { TransactionCategory } from './transaction-category.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ nullable: true })
+  userId: number | null;
+
+  @ManyToOne(() => User, { nullable: true })
+  user?: User | null;
 
   @Column()
   datetime: Date;

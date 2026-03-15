@@ -15,36 +15,41 @@ export class IncomesService {
     private readonly incomeTypeRepository: Repository<IncomeType>,
   ) {}
 
-  findAll(): Promise<Income[]> {
-    return this.incomesRepository.find();
+  findAll(userId: number): Promise<Income[]> {
+    return this.incomesRepository.find({ where: { userId } });
   }
 
-  findOne(id: number): Promise<Income | null> {
-    return this.incomesRepository.findOneByOrFail({ id });
+  findOne(id: number, userId: number): Promise<Income | null> {
+    return this.incomesRepository.findOneByOrFail({ id, userId });
   }
 
-  async create(createIncomeDTO: CreateIncomeDTO) {
-    const income = await this.incomesRepository.save(createIncomeDTO);
-    return this.findOne(income.id);
+  async create(createIncomeDTO: CreateIncomeDTO, userId: number) {
+    const income = await this.incomesRepository.save({
+      ...createIncomeDTO,
+      userId,
+    });
+    return this.findOne(income.id, userId);
   }
 
-  async update(id: number, updateIncomeDTO: UpdateIncomeDTO) {
-    const expense = await this.findOne(id);
-    return this.incomesRepository.save({ ...expense, ...updateIncomeDTO });
+  async update(id: number, updateIncomeDTO: UpdateIncomeDTO, userId: number) {
+    const income = await this.findOne(id, userId);
+    return this.incomesRepository.save({ ...income, ...updateIncomeDTO });
   }
 
-  getIncomesByMonth(month: Date) {
+  getIncomesByMonth(month: Date, userId: number) {
     return this.incomesRepository.find({
       where: [
         {
           isRecurring: true,
           startAt: LessThanOrEqual(month),
           endAt: MoreThanOrEqual(month),
+          userId,
         },
         {
           isRecurring: true,
           startAt: LessThanOrEqual(month),
           endAt: IsNull(),
+          userId,
         },
       ],
     });
@@ -54,7 +59,7 @@ export class IncomesService {
     return this.incomeTypeRepository.find();
   }
 
-  delete(id: number) {
-    return this.incomesRepository.delete(id);
+  delete(id: number, userId: number) {
+    return this.incomesRepository.delete({ id, userId });
   }
 }

@@ -9,14 +9,17 @@ import { getMonthNameByDate, getMonthNames } from 'src/utils/month.util';
 @Injectable()
 export class AccumulatedService {
   constructor(private readonly expensesService: ExpensesService) {}
+
   async getExpensesAccumulated(
     from: string,
     to: string,
+    userId: number,
     expenseId: number | null = null,
   ) {
     const history = await this.expensesService.getExpensesHistory(
       from.slice(0, 8) + '00',
       to.slice(0, 8) + '00',
+      userId,
       expenseId,
     );
     const data: ExpenseAccumulated[] = history.map((expense) => {
@@ -57,8 +60,14 @@ export class AccumulatedService {
     fromDate: string,
     toDate: string,
     expenseId: number,
+    userId: number,
   ) {
-    const data = await this.getExpensesAccumulated(fromDate, toDate, expenseId);
+    const data = await this.getExpensesAccumulated(
+      fromDate,
+      toDate,
+      userId,
+      expenseId,
+    );
     const chartData = data.data.flatMap((history) => {
       return history.months.map((month) => {
         return { amount: month.amount, month: month.monthName };

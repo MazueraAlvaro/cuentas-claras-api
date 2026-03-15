@@ -8,6 +8,7 @@ import { TxParsedEvent } from 'src/events/tx-parsed.event';
 import { RmqContext } from '@nestjs/microservices';
 import { TransactionCategory } from 'src/database/entities/transaction-category.entity';
 import { CreateTransactionDTO } from './dto/create-transaction.dto';
+import { CreateCreditCardDTO } from './dto/create-credit-card.dto';
 
 @Injectable()
 export class TransactionService {
@@ -20,14 +21,16 @@ export class TransactionService {
     private readonly transactionCategoryRepository: Repository<TransactionCategory>,
   ) {}
 
-  async registerTransaction(transactionDTO: TransactionDTO) {
+  async registerTransaction(transactionDTO: TransactionDTO, userId: number) {
     const transactionData = { ...transactionDTO } as Transaction;
     const cc = await this.creditCardRepository.findOneBy({
       lastDigits: transactionDTO.cardLastDigits,
+      userId,
     });
     if (cc) {
       transactionData.creditCard = cc;
     }
+    transactionData.userId = userId;
     const transaction = this.transactionRepository.create(transactionData);
     return this.transactionRepository.save(transaction);
   }
@@ -51,6 +54,7 @@ export class TransactionService {
     });
     if (cc) {
       transactionObject.creditCard = cc;
+      transactionObject.userId = cc.userId;
     }
     if (prevTransaction) {
       transactionObject.category = prevTransaction.category;
@@ -78,13 +82,25 @@ export class TransactionService {
     return transaction;
   }
 
-  getCreditCards() {
-    return this.creditCardRepository.find({ relations: ['transactions'] });
+  getCreditCards(userId: number) {
+    return this.creditCardRepository.find({
+      where: { userId },
+      relations: ['transactions'],
+    });
   }
 
-  async getTransactionsByCard(fromDate: string, toDate: string) {
+  createCreditCard(dto: CreateCreditCardDTO, userId: number) {
+    return this.creditCardRepository.save({ ...dto, userId });
+  }
+
+  async getTransactionsByCard(
+    fromDate: string,
+    toDate: string,
+    userId: number,
+  ) {
     const data = await this.creditCardRepository
       .createQueryBuilder('creditCard')
+      .where('creditCard.userId = :userId', { userId })
       .leftJoinAndSelect(
         'creditCard.transactions',
         'transaction',
@@ -130,16 +146,22 @@ export class TransactionService {
     );
   }
 
-  async getCategorySummary(fromDate: string, toDate: string) {
+  async getCategorySummary(
+    fromDate: string,
+    toDate: string,
+    userId: number,
+  ) {
     const categories = await this.transactionCategoryRepository.find();
 
     const summary = await Promise.all(
       categories.map(async (category) => {
         const totalAmount = await this.transactionRepository
           .createQueryBuilder('transaction')
+          .innerJoin('transaction.creditCard', 'creditCard')
           .where('transaction.categoryId = :categoryId', {
             categoryId: category.id,
           })
+          .andWhere('creditCard.userId = :userId', { userId })
           .andWhere('transaction.datetime BETWEEN :fromDate AND :toDate', {
             fromDate,
             toDate,
@@ -160,7 +182,7 @@ export class TransactionService {
     return summary;
   }
 
-  async createTransaction(transactionDTO: CreateTransactionDTO) {
+  async createTransaction(transactionDTO: CreateTransactionDTO, userId: number) {
     const category = await this.transactionCategoryRepository.findOneBy({
       id: transactionDTO.category,
     });
@@ -169,6 +191,7 @@ export class TransactionService {
     }
     const creditCard = await this.creditCardRepository.findOneBy({
       id: transactionDTO.creditCardId,
+      userId,
     });
     if (!creditCard) {
       throw new Error('Credit card not found');
@@ -179,6 +202,7 @@ export class TransactionService {
       approved: true,
       idempotencyKey: transactionDTO.cardLastDigits + transactionDTO.datetime,
       creditCard,
+      userId,
     };
     return this.transactionRepository.save(transactionData);
   }
